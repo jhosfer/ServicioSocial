@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Servicio Social Estudiantil</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ===== VARIABLES Y RESET ===== */
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2230;
+    --border: #2a3444;
+    --accent: #00c896;
+    --accent2: #0a84ff;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #6e7681;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ===== TIPOGRAFÍA ===== */
+  h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+  h1 { font-size: 2rem; font-weight: 800; }
+  h2 { font-size: 1.4rem; font-weight: 700; }
+  h3 { font-size: 1.1rem; font-weight: 600; }
+
+  /* ===== LOGIN ===== */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 60% 40%, rgba(0,200,150,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(10,132,255,0.06) 0%, transparent 50%),
+                var(--bg);
+    padding: 24px;
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.5s ease;
+  }
+  .login-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .login-logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .login-logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; line-height: 1.2; }
+  .login-logo-sub { font-size: 0.7rem; color: var(--text2); font-family: 'DM Sans', sans-serif; font-weight: 400; }
+  .login-title { margin-bottom: 8px; font-size: 1.6rem; }
+  .login-subtitle { color: var(--text2); margin-bottom: 32px; font-size: 0.875rem; }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-control {
+    width: 100%; padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,200,150,0.15); }
+  select.form-control option { background: var(--surface2); }
+  .btn {
+    padding: 12px 24px; border: none; border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.9rem;
+    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary { background: var(--accent); color: #000; width: 100%; justify-content: center; }
+  .btn-primary:hover { background: #00e0aa; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,200,150,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-success { background: var(--success); color: #000; font-size: 0.8rem; padding: 6px 14px; }
+  .btn-danger { background: var(--danger); color: #fff; font-size: 0.8rem; padding: 6px 14px; }
+  .btn-warn { background: var(--warn); color: #000; font-size: 0.8rem; padding: 6px 14px; }
+  .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+  .alert {
+    padding: 12px 16px; border-radius: var(--radius-sm); font-size: 0.875rem;
+    margin-top: 16px; display: none; align-items: flex-start; gap: 10px;
+  }
+  .alert.show { display: flex; }
+  .alert-danger { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+  .alert-success { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+  .alert-warn { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+  .attempts-bar { display: flex; gap: 6px; margin-top: 12px; }
+  .attempt-dot {
+    width: 10px; height: 10px; border-radius: 50%; background: var(--border);
+    transition: background 0.3s;
+  }
+  .attempt-dot.used { background: var(--danger); }
+
+  /* ===== APP SHELL ===== */
+  #app { display: none; min-height: 100vh; flex-direction: column; }
+  #app.active { display: flex; }
+
+  /* ===== TOPBAR ===== */
+  .topbar {
+    height: 60px; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; }
+  .topbar-brand-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: #000; font-family: 'Syne', sans-serif;
+  }
+  .topbar-brand-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .topbar-user { display: flex; align-items: center; gap: 12px; }
+  .topbar-user-info { text-align: right; }
+  .topbar-user-name { font-weight: 600; font-size: 0.875rem; }
+  .topbar-user-role { font-size: 0.75rem; color: var(--text2); }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.875rem; color: #000; font-family: 'Syne', sans-serif;
+  }
+  .btn-logout { background: none; border: 1px solid var(--border); color: var(--text2); font-size: 0.8rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ===== SIDEBAR + MAIN ===== */
+  .layout { display: flex; flex: 1; }
+  .sidebar {
+    width: 220px; background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 0; display: flex; flex-direction: column;
+    position: sticky; top: 60px; height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+  .sidebar-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); font-weight: 600; padding: 0 12px; margin-bottom: 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px; cursor: pointer;
+    color: var(--text2); font-size: 0.875rem; font-weight: 500;
+    transition: all 0.15s; margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(0,200,150,0.12); color: var(--accent); }
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .main-content { flex: 1; padding: 32px; overflow-y: auto; }
+
+  /* ===== PAGES ===== */
+  .page { display: none; animation: fadeUp 0.3s ease; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 32px; }
+  .page-title { margin-bottom: 4px; }
+  .page-subtitle { color: var(--text2); font-size: 0.875rem; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .card-title span { color: var(--accent); }
+
+  /* ===== STATS ===== */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .stat-card.green::before { background: var(--accent); }
+  .stat-card.blue::before { background: var(--accent2); }
+  .stat-card.warn::before { background: var(--warn); }
+  .stat-card.red::before { background: var(--danger); }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ===== TABLE ===== */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  thead th { background: var(--surface2); padding: 10px 14px; text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text2); font-weight: 600; white-space: nowrap; }
+  thead th:first-child { border-radius: 8px 0 0 8px; }
+  thead th:last-child { border-radius: 0 8px 8px 0; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody td { padding: 12px 14px; vertical-align: middle; }
+
+  /* ===== BADGES ===== */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+  }
+  .badge-pending { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+  .badge-approved { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+  .badge-rejected { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+  .badge-open { background: rgba(10,132,255,0.15); color: #93c5fd; border: 1px solid rgba(10,132,255,0.25); }
+  .badge-closed { background: rgba(110,118,129,0.15); color: var(--text3); border: 1px solid var(--border); }
+
+  /* ===== PROGRESS ===== */
+  .progress-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; width: 120px; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .progress-bar-fill.complete { background: var(--accent); }
+  .progress-bar-fill.partial { background: var(--accent2); }
+  .progress-bar-fill.low { background: var(--danger); }
+
+  /* ===== FORM GRID ===== */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid .span-2 { grid-column: span 2; }
+  textarea.form-control { resize: vertical; min-height: 90px; }
+  .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text2); }
+  .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-text { font-size: 0.875rem; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center; z-index: 200;
+    padding: 24px;
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px;
+    width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+    animation: scaleIn 0.2s ease;
+  }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; }
+  .modal-close { background: none; border: none; color: var(--text2); font-size: 1.2rem; cursor: pointer; }
+  .modal-close:hover { color: var(--text); }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .span-2 { grid-column: span 1; }
+    .main-content { padding: 20px; }
+    .login-card { padding: 32px 24px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== HELPERS ===== */
+  .text-accent { color: var(--accent); }
+  .text-muted { color: var(--text2); }
+  .text-small { font-size: 0.8rem; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .hidden { display: none !important; }
+  .mt-16 { margin-top: 16px; }
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+  /* ===== BLOQUEO Y TEMPORIZADOR ===== */
+  .lockout-box {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-top: 16px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .lockout-box.show { display: flex; }
+  .lockout-title { font-family: 'Syne', sans-serif; font-weight: 700; color: #fca5a5; font-size: 0.95rem; display:flex; align-items:center; gap:8px; }
+  .lockout-timer { font-size: 2rem; font-family: 'Syne', sans-serif; font-weight: 800; color: var(--danger); letter-spacing: 0.05em; }
+  .lockout-msg { font-size: 0.8rem; color: var(--text2); }
+  .lockout-progress { background: rgba(239,68,68,0.15); border-radius:4px; height:4px; overflow:hidden; }
+  .lockout-progress-fill { height:100%; background: var(--danger); transition: width 1s linear; border-radius:4px; }
+
+  /* Panel desbloqueo docente */
+  .unlock-table-wrap { overflow-x:auto; }
+  .badge-locked { background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.25); }
+</style>
+</head>
+<body>
+
+<!-- ==============================
+     PANTALLA DE LOGIN
+     ============================== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🎓</div>
+      <div>
+        <div class="login-logo-text">ServicioSocial <span style="color:var(--accent)">SSE</span></div>
+        <div class="login-logo-sub">Sistema de Control — Ley 1437 de 2011</div>
+      </div>
+    </div>
+    <h1 class="login-title">Iniciar sesión</h1>
+    <p class="login-subtitle">Ingresa tus credenciales para acceder al sistema.</p>
+
+    <div class="form-group">
+      <label>ID de Usuario</label>
+      <input type="text" id="login-id" class="form-control" placeholder="Ej: EST001 o DOC001" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" class="form-control" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <!-- Indicador de intentos fallidos -->
+    <div id="attempts-container" style="display:none; margin-bottom:12px;">
+      <p class="text-small text-muted" style="margin-bottom:6px;">Intentos fallidos:</p>
+      <div class="attempts-bar">
+        <div class="attempt-dot" id="dot-1"></div>
+        <div class="attempt-dot" id="dot-2"></div>
+        <div class="attempt-dot" id="dot-3"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-login" onclick="handleLogin()">🔐 Ingresar al Sistema</button>
+
+    <div class="alert alert-danger" id="alert-login"></div>
+
+    <!-- Caja de bloqueo con temporizador -->
+    <div class="lockout-box" id="lockout-box">
+      <div class="lockout-title">🔒 Cuenta bloqueada temporalmente</div>
+      <div class="lockout-timer" id="lockout-timer">15:00</div>
+      <div class="lockout-progress">
+        <div class="lockout-progress-fill" id="lockout-progress-fill" style="width:100%"></div>
+      </div>
+      <div class="lockout-msg" id="lockout-msg">Superaste los 3 intentos permitidos. Espera o contacta a un docente para desbloquear tu cuenta.</div>
+    </div>
+
+    <div style="margin-top:24px; padding:16px; background:var(--surface2); border-radius:8px; font-size:0.78rem; color:var(--text2);">
+      <strong style="color:var(--text);">Cuentas de prueba:</strong><br>
+      Estudiantes: <code>EST001</code> / <code>123456</code> · <code>EST002</code> / <code>123456</code><br>
+      Docentes: <code>DOC001</code> / <code>abcdef</code> · <code>DOC002</code> / <code>abcdef</code>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     APLICACIÓN PRINCIPAL
+     ============================== -->
+<div id="app">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-brand-icon">🎓</div>
+      <span class="topbar-brand-name">Servicio Social <span class="text-accent">SSE</span></span>
+    </div>
+    <div class="topbar-user">
+      <div class="topbar-user-info">
+        <div class="topbar-user-name" id="user-name-display">—</div>
+        <div class="topbar-user-role" id="user-role-display">—</div>
+      </div>
+      <div class="avatar" id="user-avatar">?</div>
+      <button class="btn-logout" onclick="handleLogout()">Salir</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div style="padding: 0 12px; margin-bottom: 20px;">
+        <p class="sidebar-label">Principal</p>
+        <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </div>
+      </div>
+
+      <!-- Sección docente -->
+      <div id="sidebar-docente" class="hidden" style="padding:0 12px; margin-bottom:20px;">
+        <p class="sidebar-label">Administración</p>
+        <div class="nav-item" onclick="navigate('registrar-estudiante')" id="nav-registrar-estudiante">
+          <span class="nav-icon">👤</span> Estudiantes
+        </div>
+        <div class="nav-item" onclick="navigate('registrar-docente')" id="nav-registrar-docente">
+          <span class="nav-icon">🧑‍🏫</span> Docentes
+        </div>
+        <div class="nav-item" onclick="navigate('registrar-actividad')" id="nav-registrar-actividad">
+          <span class="nav-icon">📋</span> Actividades
+        </div>
+        <div class="nav-item" onclick="navigate('panel-docente')" id="nav-panel-docente">
+          <span class="nav-icon">✅</span> Aprobar / Rechazar
+        </div>
+        <div class="nav-item" onclick="navigate('desbloquear')" id="nav-desbloquear">
+          <span class="nav-icon">🔓</span> Desbloquear Cuentas
+        </div>
+      </div>
+
+      <!-- Sección estudiante -->
+      <div id="sidebar-estudiante" class="hidden" style="padding:0 12px; margin-bottom:20px;">
+        <p class="sidebar-label">Mi servicio social</p>
+        <div class="nav-item" onclick="navigate('registrar-servicio')" id="nav-registrar-servicio">
+          <span class="nav-icon">📝</span> Registrar actividad
+        </div>
+        <div class="nav-item" onclick="navigate('mis-registros')" id="nav-mis-registros">
+          <span class="nav-icon">📁</span> Mis registros
+        </div>
+      </div>
+
+      <!-- Reportes para todos -->
+      <div style="padding:0 12px;">
+        <p class="sidebar-label">Reportes</p>
+        <div class="nav-item" onclick="navigate('reportes')" id="nav-reportes">
+          <span class="nav-icon">📈</span> Consultas y reportes
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h2 class="page-title">Dashboard</h2>
+          <p class="page-subtitle">Resumen general del sistema de servicio social estudiantil</p>
+        </div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div id="dashboard-extra"></div>
+      </div>
+
+      <!-- ===== REGISTRAR ESTUDIANTE ===== -->
+      <div class="page" id="page-registrar-estudiante">
+        <div class="page-header">
+          <h2 class="page-title">Gestión de Estudiantes</h2>
+          <p class="page-subtitle">Registra y consulta los estudiantes en el sistema</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span>+</span> Nuevo Estudiante</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>ID del Estudiante</label>
+              <input type="text" id="est-id" class="form-control" placeholder="Ej: EST003">
+            </div>
+            <div class="form-group">
+              <label>Nombre Completo</label>
+              <input type="text" id="est-nombre" class="form-control" placeholder="Nombre y apellidos">
+            </div>
+            <div class="form-group">
+              <label>Grado</label>
+              <input type="text" id="est-grado" class="form-control" placeholder="Ej: 11°A">
+            </div>
+            <div class="form-group">
+              <label>Correo Electrónico</label>
+              <input type="email" id="est-correo" class="form-control" placeholder="correo@ejemplo.com">
+            </div>
+            <div class="form-group">
+              <label>Contraseña</label>
+              <input type="password" id="est-pass" class="form-control" placeholder="Contraseña de acceso">
+            </div>
+          </div>
+          <div class="alert alert-danger" id="alert-est"></div>
+          <div class="alert alert-success" id="alert-est-ok"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="registrarEstudiante()">💾 Guardar Estudiante</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Listado de Estudiantes</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Nombre</th><th>Grado</th><th>Correo</th><th>Minutos Aprobados</th></tr></thead>
+              <tbody id="tabla-estudiantes"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== REGISTRAR DOCENTE ===== -->
+      <div class="page" id="page-registrar-docente">
+        <div class="page-header">
+          <h2 class="page-title">Gestión de Docentes</h2>
+          <p class="page-subtitle">Registra y consulta los docentes en el sistema</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span>+</span> Nuevo Docente</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>ID del Docente</label>
+              <input type="text" id="doc-id" class="form-control" placeholder="Ej: DOC003">
+            </div>
+            <div class="form-group">
+              <label>Nombre Completo</label>
+              <input type="text" id="doc-nombre" class="form-control" placeholder="Nombre y apellidos">
+            </div>
+            <div class="form-group">
+              <label>Correo Electrónico</label>
+              <input type="email" id="doc-correo" class="form-control" placeholder="correo@escuela.edu.co">
+            </div>
+            <div class="form-group">
+              <label>Área</label>
+              <input type="text" id="doc-area" class="form-control" placeholder="Ej: Matemáticas">
+            </div>
+            <div class="form-group">
+              <label>Contraseña</label>
+              <input type="password" id="doc-pass" class="form-control" placeholder="Contraseña de acceso">
+            </div>
+          </div>
+          <div class="alert alert-danger" id="alert-doc"></div>
+          <div class="alert alert-success" id="alert-doc-ok"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="registrarDocente()">💾 Guardar Docente</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Listado de Docentes</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Área</th></tr></thead>
+              <tbody id="tabla-docentes"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== REGISTRAR ACTIVIDAD ===== -->
+      <div class="page" id="page-registrar-actividad">
+        <div class="page-header">
+          <h2 class="page-title">Gestión de Actividades</h2>
+          <p class="page-subtitle">Registra las actividades de servicio social disponibles</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span>+</span> Nueva Actividad</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>ID de Actividad</label>
+              <input type="text" id="act-id" class="form-control" placeholder="Ej: ACT003">
+            </div>
+            <div class="form-group">
+              <label>Nombre de la Actividad</label>
+              <input type="text" id="act-nombre" class="form-control" placeholder="Nombre descriptivo">
+            </div>
+            <div class="form-group">
+              <label>Lugar</label>
+              <input type="text" id="act-lugar" class="form-control" placeholder="Ej: Biblioteca central">
+            </div>
+            <div class="form-group">
+              <label>Cupos disponibles</label>
+              <input type="number" id="act-cupos" class="form-control" placeholder="Ej: 20" min="1">
+            </div>
+            <div class="form-group">
+              <label>Estado</label>
+              <select id="act-estado" class="form-control">
+                <option value="Abierto">Abierto</option>
+                <option value="Cerrado">Cerrado</option>
+              </select>
+            </div>
+          </div>
+          <div class="alert alert-danger" id="alert-act"></div>
+          <div class="alert alert-success" id="alert-act-ok"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="registrarActividad()">💾 Guardar Actividad</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Listado de Actividades</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Nombre</th><th>Lugar</th><th>Cupos</th><th>Estado</th><th>Acción</th></tr></thead>
+              <tbody id="tabla-actividades"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== REGISTRAR SERVICIO (ESTUDIANTE) ===== -->
+      <div class="page" id="page-registrar-servicio">
+        <div class="page-header">
+          <h2 class="page-title">Registrar Actividad Realizada</h2>
+          <p class="page-subtitle">Registra el tiempo dedicado a una actividad de servicio social</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span>+</span> Nueva Entrada de Bitácora</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Fecha de realización</label>
+              <input type="date" id="srv-fecha" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Actividad</label>
+              <select id="srv-actividad" class="form-control">
+                <option value="">— Selecciona una actividad —</option>
+              </select>
+            </div>
+            <div class="form-group span-2">
+              <label>Descripción detallada</label>
+              <textarea id="srv-descripcion" class="form-control" placeholder="Describe en detalle lo que realizaste durante la actividad..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Minutos dedicados</label>
+              <input type="number" id="srv-minutos" class="form-control" placeholder="Ej: 120" min="1" max="480">
+            </div>
+          </div>
+          <div class="alert alert-danger" id="alert-srv"></div>
+          <div class="alert alert-success" id="alert-srv-ok"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="registrarServicio()">📝 Enviar registro</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MIS REGISTROS (ESTUDIANTE) ===== -->
+      <div class="page" id="page-mis-registros">
+        <div class="page-header">
+          <h2 class="page-title">Mis Registros</h2>
+          <p class="page-subtitle">Historial de tus actividades de servicio social</p>
+        </div>
+        <div class="card" id="card-progreso-estudiante"></div>
+        <div class="card">
+          <div class="card-title">📁 Historial de bitácora</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Actividad</th><th>Descripción</th><th>Minutos</th><th>Estado</th></tr></thead>
+              <tbody id="tabla-mis-registros"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PANEL DOCENTE ===== -->
+      <div class="page" id="page-panel-docente">
+        <div class="page-header">
+          <h2 class="page-title">Panel de Aprobaciones</h2>
+          <p class="page-subtitle">Revisa y aprueba o rechaza los registros de servicio social pendientes</p>
+        </div>
+        <div class="card">
+          <div class="card-title">⏳ Registros Pendientes</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Estudiante</th><th>Fecha</th><th>Actividad</th><th>Descripción</th><th>Minutos</th><th>Acción</th></tr></thead>
+              <tbody id="tabla-pendientes"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">✅ Historial de decisiones</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Estudiante</th><th>Fecha</th><th>Actividad</th><th>Minutos</th><th>Estado</th></tr></thead>
+              <tbody id="tabla-historial-doc"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== DESBLOQUEAR CUENTAS (DOCENTE) ===== -->
+      <div class="page" id="page-desbloquear">
+        <div class="page-header">
+          <h2 class="page-title">🔓 Desbloquear Cuentas</h2>
+          <p class="page-subtitle">Como docente puedes desbloquear manualmente cuentas bloqueadas por intentos fallidos</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🔒 Cuentas Bloqueadas</div>
+          <div class="unlock-table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Intentos</th><th>Tiempo restante</th><th>Acción</th></tr></thead>
+              <tbody id="tabla-bloqueados"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-reportes">
+        <div class="page-header">
+          <h2 class="page-title">Consultas y Reportes</h2>
+          <p class="page-subtitle">Seguimiento del cumplimiento de las 80 horas (4800 min.) de servicio social — Ley 1437 de 2011</p>
+        </div>
+        <div class="stats-grid" id="reporte-stats"></div>
+        <div class="card">
+          <div class="card-title">📊 Progreso por Estudiante</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Estudiante</th><th>Grado</th>
+                  <th>Min. Aprobados</th><th>Min. Pendientes</th>
+                  <th>% Cumplimiento</th><th>Progreso</th><th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-reporte"></tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+          <div class="card">
+            <div class="card-title" style="color:var(--success)">✅ Completaron el Servicio Social</div>
+            <div id="lista-completos"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="color:var(--warn)">⏳ Pendientes por completar</div>
+            <div id="lista-pendientes-rep"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ==============================
+     JAVASCRIPT
+     ============================== -->
+<script>
+// ============================================================
+//  CONSTANTES
+// ============================================================
+const TOTAL_MINUTOS = 4800; // 80 horas × 60 min = 4800 minutos
+const MAX_INTENTOS  = 3;    // Máximo de intentos de login fallidos
+
+// ============================================================
+//  DATOS SEMILLA (se cargan solo si localStorage está vacío)
+// ============================================================
+const SEED_DATA = {
+  docentes: [
+    { id: 'DOC001', nombre: 'Carlos Ramírez Pérez',  correo: 'c.ramirez@escuela.edu.co', area: 'Ciencias Sociales', contrasenia: 'abcdef' },
+    { id: 'DOC002', nombre: 'Lucía Martínez Torres', correo: 'l.martinez@escuela.edu.co', area: 'Lengua Castellana', contrasenia: 'abcdef' }
+  ],
+  estudiantes: [
+    { id: 'EST001', nombre: 'Andrés García López',   grado: '11°A', correo: 'a.garcia@estudiante.edu.co',   minutosTotalesAprobados: 1200, contrasenia: '123456' },
+    { id: 'EST002', nombre: 'Valentina Ríos Muñoz',  grado: '11°B', correo: 'v.rios@estudiante.edu.co',     minutosTotalesAprobados: 4800, contrasenia: '123456' }
+  ],
+  actividades: [
+    { idActividad: 'ACT001', nombreActividad: 'Apoyo a Biblioteca Escolar',     lugar: 'Biblioteca Central',    cupos: 15, estado: 'Abierto' },
+    { idActividad: 'ACT002', nombreActividad: 'Campaña de Reciclaje Comunitaria', lugar: 'Patio principal',      cupos: 30, estado: 'Abierto' }
+  ],
+  servicios: [
+    { id: 's1', estudianteId: 'EST001', actividadId: 'ACT001', fecha: '2024-03-10', descripcion: 'Organicé y catalogué libros nuevos en la biblioteca.', minutos: 120, estado: 'Aprobado' },
+    { id: 's2', estudianteId: 'EST001', actividadId: 'ACT002', fecha: '2024-03-15', descripcion: 'Participé en la jornada de limpieza del patio.', minutos: 90,  estado: 'Pendiente' },
+    { id: 's3', estudianteId: 'EST002', actividadId: 'ACT001', fecha: '2024-03-20', descripcion: 'Ayudé a clasificar material didáctico.', minutos: 150, estado: 'Aprobado' }
+  ],
+  intentos: {} // mapa { id: número_de_intentos_fallidos }
+};
+
+// ============================================================
+//  GESTIÓN DE BASE DE DATOS (localStorage)
+// ============================================================
+function getDB() {
+  const raw = localStorage.getItem('sse_db');
+  return raw ? JSON.parse(raw) : null;
+}
+function saveDB(db) {
+  localStorage.setItem('sse_db', JSON.stringify(db));
+}
+function initDB() {
+  if (!getDB()) {
+    saveDB(JSON.parse(JSON.stringify(SEED_DATA)));
+  }
+}
+
+// ============================================================
+//  ESTADO DE SESIÓN
+// ============================================================
+let currentUser = null; // objeto { id, nombre, rol }
+let lockTimerInterval = null; // intervalo del temporizador de bloqueo
+
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutos en milisegundos
+
+// ============================================================
+//  MÓDULO 1: LOGIN — GESTIÓN DE BLOQUEOS EN localStorage
+// ============================================================
+
+/**
+ * getLockouts — obtiene el mapa de bloqueos desde localStorage.
+ * Estructura: { "EST001": { intentos: 3, bloqueadoHasta: timestamp }, ... }
+ */
+function getLockouts() {
+  const raw = localStorage.getItem('sse_lockouts');
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveLockouts(lockouts) {
+  localStorage.setItem('sse_lockouts', JSON.stringify(lockouts));
+}
+
+/**
+ * estaBloquedo — verifica si un ID está actualmente bloqueado.
+ * Si el bloqueo ya expiró (pasaron los 15 min), lo limpia automáticamente.
+ */
+function estaBloquedo(id) {
+  const lockouts = getLockouts();
+  const info = lockouts[id];
+  if (!info) return false;
+  if (info.intentos < MAX_INTENTOS) return false;
+  if (!info.bloqueadoHasta) return false;
+  // Si ya expiró el tiempo, limpiar bloqueo automáticamente
+  if (Date.now() > info.bloqueadoHasta) {
+    delete lockouts[id];
+    saveLockouts(lockouts);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * registrarIntentoFallido — suma un intento fallido a un ID.
+ * Si llega a MAX_INTENTOS, guarda la hora de bloqueo.
+ * Persiste en localStorage para sobrevivir recargas.
+ */
+function registrarIntentoFallido(id) {
+  const lockouts = getLockouts();
+  if (!lockouts[id]) lockouts[id] = { intentos: 0, bloqueadoHasta: null };
+  lockouts[id].intentos++;
+  if (lockouts[id].intentos >= MAX_INTENTOS) {
+    lockouts[id].bloqueadoHasta = Date.now() + LOCKOUT_DURATION_MS;
+  }
+  saveLockouts(lockouts);
+  return lockouts[id];
+}
+
+function getIntentos(id) {
+  const lockouts = getLockouts();
+  return lockouts[id] ? lockouts[id].intentos : 0;
+}
+
+/**
+ * iniciarTemporizador — muestra la cuenta regresiva de 15 minutos.
+ * Actualiza cada segundo y desbloquea automáticamente al llegar a 0.
+ */
+function iniciarTemporizador(bloqueadoHasta) {
+  if (lockTimerInterval) clearInterval(lockTimerInterval);
+  const totalSeg = Math.round(LOCKOUT_DURATION_MS / 1000);
+
+  function tick() {
+    const restanteMs = bloqueadoHasta - Date.now();
+    if (restanteMs <= 0) {
+      clearInterval(lockTimerInterval);
+      lockTimerInterval = null;
+      // Desbloqueo automático por tiempo
+      document.getElementById('lockout-box').classList.remove('show');
+      document.getElementById('btn-login').disabled = false;
+      document.getElementById('login-id').disabled  = false;
+      document.getElementById('login-password').disabled = false;
+      document.querySelectorAll('.attempt-dot').forEach(d => d.classList.remove('used'));
+      document.getElementById('attempts-container').style.display = 'none';
+      showAlert('alert-login', '✅ Tiempo de espera completado. Ya puedes intentar ingresar nuevamente.', true);
+      return;
+    }
+    const seg = Math.ceil(restanteMs / 1000);
+    const min = Math.floor(seg / 60);
+    const s   = seg % 60;
+    document.getElementById('lockout-timer').textContent =
+      `${String(min).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    // Barra de progreso
+    const pct = (restanteMs / LOCKOUT_DURATION_MS) * 100;
+    document.getElementById('lockout-progress-fill').style.width = pct + '%';
+  }
+  tick();
+  lockTimerInterval = setInterval(tick, 1000);
+}
+
+/**
+ * handleLogin — gestiona el proceso de autenticación.
+ * Mejoras: bloqueo persistente en localStorage, temporizador de 15 min,
+ * y soporte para desbloqueo manual por docente.
+ */
+function handleLogin() {
+  const inputId   = document.getElementById('login-id').value.trim().toUpperCase();
+  const inputPass = document.getElementById('login-password').value.trim();
+
+  if (!inputId) { showAlert('alert-login', '⚠️ Ingresa tu ID de usuario.', true); return; }
+
+  // Verificar si la cuenta está bloqueada (persistente en localStorage)
+  if (estaBloquedo(inputId)) {
+    const lockouts = getLockouts();
+    activarPantallaBloqueo(inputId, lockouts[inputId].bloqueadoHasta);
+    return;
+  }
+
+  showAlert('alert-login', '', false);
+  const db = getDB();
+
+  // Buscar usuario
+  const docente    = db.docentes.find(d => d.id === inputId && d.contrasenia === inputPass);
+  const estudiante = db.estudiantes.find(e => e.id === inputId && e.contrasenia === inputPass);
+
+  if (docente) {
+    limpiarBloqueo(inputId);
+    iniciarSesion({ id: docente.id, nombre: docente.nombre, rol: 'docente' });
+    return;
+  }
+  if (estudiante) {
+    limpiarBloqueo(inputId);
+    iniciarSesion({ id: estudiante.id, nombre: estudiante.nombre, rol: 'estudiante' });
+    return;
+  }
+
+  // --- Credenciales incorrectas ---
+  const info = registrarIntentoFallido(inputId);
+  document.getElementById('attempts-container').style.display = 'block';
+  for (let i = 1; i <= info.intentos; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    if (dot) dot.classList.add('used');
+  }
+
+  if (info.intentos >= MAX_INTENTOS) {
+    activarPantallaBloqueo(inputId, info.bloqueadoHasta);
+  } else {
+    const restantes = MAX_INTENTOS - info.intentos;
+    showAlert('alert-login', `❌ Credenciales incorrectas. Te quedan ${restantes} intento(s) antes del bloqueo.`, true);
+  }
+}
+
+/**
+ * activarPantallaBloqueo — muestra la caja de bloqueo con temporizador
+ * y deshabilita los controles de login.
+ */
+function activarPantallaBloqueo(id, bloqueadoHasta) {
+  document.getElementById('btn-login').disabled = true;
+  document.getElementById('login-id').disabled  = true;
+  document.getElementById('login-password').disabled = true;
+  document.getElementById('lockout-box').classList.add('show');
+  document.getElementById('lockout-msg').textContent =
+    `La cuenta "${id}" fue bloqueada por superar los ${MAX_INTENTOS} intentos. ` +
+    `Espera 15 minutos o pide a un docente que la desbloquee.`;
+  iniciarTemporizador(bloqueadoHasta);
+}
+
+/**
+ * limpiarBloqueo — elimina el registro de intentos de un ID.
+ * Se llama al iniciar sesión correctamente.
+ */
+function limpiarBloqueo(id) {
+  const lockouts = getLockouts();
+  delete lockouts[id];
+  saveLockouts(lockouts);
+}
+
+function iniciarSesion(user) {
+  currentUser = user;
+  if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  document.getElementById('user-name-display').textContent = user.nombre;
+  document.getElementById('user-role-display').textContent = user.rol === 'docente' ? '👨‍🏫 Docente' : '🎒 Estudiante';
+  document.getElementById('user-avatar').textContent = user.nombre.charAt(0).toUpperCase();
+  if (user.rol === 'docente') {
+    document.getElementById('sidebar-docente').classList.remove('hidden');
+  } else {
+    document.getElementById('sidebar-estudiante').classList.remove('hidden');
+  }
+  navigate('dashboard');
+}
+
+function handleLogout() {
+  currentUser = null;
+  if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
+  // Reiniciar UI de login
+  document.getElementById('login-id').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-id').disabled = false;
+  document.getElementById('login-password').disabled = false;
+  document.getElementById('btn-login').disabled = false;
+  document.getElementById('attempts-container').style.display = 'none';
+  document.querySelectorAll('.attempt-dot').forEach(d => d.classList.remove('used'));
+  document.getElementById('lockout-box').classList.remove('show');
+  showAlert('alert-login', '', false);
+  document.getElementById('sidebar-docente').classList.add('hidden');
+  document.getElementById('sidebar-estudiante').classList.add('hidden');
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ============================================================
+//  NAVEGACIÓN
+// ============================================================
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  const navEl = document.getElementById(`nav-${page}`);
+  if (navEl) navEl.classList.add('active');
+  // Renderizar datos al navegar
+  renderPage(page);
+}
+
+function renderPage(page) {
+  switch(page) {
+    case 'dashboard':           renderDashboard(); break;
+    case 'registrar-estudiante': renderTablaEstudiantes(); break;
+    case 'registrar-docente':    renderTablaDocentes(); break;
+    case 'registrar-actividad':  renderTablaActividades(); break;
+    case 'panel-docente':        renderPanelDocente(); break;
+    case 'registrar-servicio':   renderSelectActividades(); break;
+    case 'mis-registros':        renderMisRegistros(); break;
+    case 'reportes':             renderReportes(); break;
+    case 'desbloquear':          renderDesbloquear(); break;
+  }
+}
+
+// ============================================================
+//  MÓDULO 2: REGISTRAR — Docente
+// ============================================================
+function registrarDocente() {
+  const id      = document.getElementById('doc-id').value.trim().toUpperCase();
+  const nombre  = document.getElementById('doc-nombre').value.trim();
+  const correo  = document.getElementById('doc-correo').value.trim();
+  const area    = document.getElementById('doc-area').value.trim();
+  const pass    = document.getElementById('doc-pass').value.trim();
+
+  if (!id || !nombre || !correo || !area || !pass) {
+    showAlert('alert-doc', '⚠️ Todos los campos son obligatorios.', true);
+    return;
+  }
+  const db = getDB();
+  if (db.docentes.find(d => d.id === id)) {
+    showAlert('alert-doc', `⚠️ Ya existe un docente con ID "${id}".`, true);
+    return;
+  }
+  db.docentes.push({ id, nombre, correo, area, contrasenia: pass });
+  saveDB(db);
+  showAlert('alert-doc-ok', `✅ Docente "${nombre}" registrado correctamente.`, true);
+  showAlert('alert-doc', '', false);
+  ['doc-id','doc-nombre','doc-correo','doc-area','doc-pass'].forEach(f => document.getElementById(f).value = '');
+  renderTablaDocentes();
+}
+
+function renderTablaDocentes() {
+  const db = getDB();
+  const tbody = document.getElementById('tabla-docentes');
+  if (!tbody) return;
+  if (!db.docentes.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">🧑‍🏫</div><div class="empty-text">No hay docentes registrados.</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = db.docentes.map(d =>
+    `<tr><td><strong>${d.id}</strong></td><td>${d.nombre}</td><td>${d.correo}</td><td>${d.area}</td></tr>`
+  ).join('');
+}
+
+// ============================================================
+//  MÓDULO 2: REGISTRAR — Estudiante
+// ============================================================
+function registrarEstudiante() {
+  const id     = document.getElementById('est-id').value.trim().toUpperCase();
+  const nombre = document.getElementById('est-nombre').value.trim();
+  const grado  = document.getElementById('est-grado').value.trim();
+  const correo = document.getElementById('est-correo').value.trim();
+  const pass   = document.getElementById('est-pass').value.trim();
+
+  if (!id || !nombre || !grado || !correo || !pass) {
+    showAlert('alert-est', '⚠️ Todos los campos son obligatorios.', true);
+    return;
+  }
+  const db = getDB();
+  if (db.estudiantes.find(e => e.id === id)) {
+    showAlert('alert-est', `⚠️ Ya existe un estudiante con ID "${id}".`, true);
+    return;
+  }
+  db.estudiantes.push({ id, nombre, grado, correo, minutosTotalesAprobados: 0, contrasenia: pass });
+  saveDB(db);
+  showAlert('alert-est-ok', `✅ Estudiante "${nombre}" registrado correctamente.`, true);
+  showAlert('alert-est', '', false);
+  ['est-id','est-nombre','est-grado','est-correo','est-pass'].forEach(f => document.getElementById(f).value = '');
+  renderTablaEstudiantes();
+}
+
+function renderTablaEstudiantes() {
+  const db = getDB();
+  const tbody = document.getElementById('tabla-estudiantes');
+  if (!tbody) return;
+  if (!db.estudiantes.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">👤</div><div class="empty-text">No hay estudiantes registrados.</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = db.estudiantes.map(e =>
+    `<tr>
+      <td><strong>${e.id}</strong></td>
+      <td>${e.nombre}</td>
+      <td>${e.grado}</td>
+      <td>${e.correo}</td>
+      <td>${e.minutosTotalesAprobados} min</td>
+    </tr>`
+  ).join('');
+}
+
+// ============================================================
+//  MÓDULO 2: REGISTRAR — Actividad
+// ============================================================
+function registrarActividad() {
+  const id     = document.getElementById('act-id').value.trim().toUpperCase();
+  const nombre = document.getElementById('act-nombre').value.trim();
+  const lugar  = document.getElementById('act-lugar').value.trim();
+  const cupos  = parseInt(document.getElementById('act-cupos').value);
+  const estado = document.getElementById('act-estado').value;
+
+  if (!id || !nombre || !lugar || isNaN(cupos) || !estado) {
+    showAlert('alert-act', '⚠️ Todos los campos son obligatorios.', true);
+    return;
+  }
+  const db = getDB();
+  if (db.actividades.find(a => a.idActividad === id)) {
+    showAlert('alert-act', `⚠️ Ya existe una actividad con ID "${id}".`, true);
+    return;
+  }
+  db.actividades.push({ idActividad: id, nombreActividad: nombre, lugar, cupos, estado });
+  saveDB(db);
+  showAlert('alert-act-ok', `✅ Actividad "${nombre}" registrada correctamente.`, true);
+  showAlert('alert-act', '', false);
+  ['act-id','act-nombre','act-lugar','act-cupos'].forEach(f => document.getElementById(f).value = '');
+  renderTablaActividades();
+}
+
+function toggleEstadoActividad(actId) {
+  const db = getDB();
+  const act = db.actividades.find(a => a.idActividad === actId);
+  if (act) {
+    act.estado = act.estado === 'Abierto' ? 'Cerrado' : 'Abierto';
+    saveDB(db);
+    renderTablaActividades();
+  }
+}
+
+function renderTablaActividades() {
+  const db = getDB();
+  const tbody = document.getElementById('tabla-actividades');
+  if (!tbody) return;
+  if (!db.actividades.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No hay actividades registradas.</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = db.actividades.map(a => `
+    <tr>
+      <td><strong>${a.idActividad}</strong></td>
+      <td>${a.nombreActividad}</td>
+      <td>${a.lugar}</td>
+      <td>${a.cupos}</td>
+      <td><span class="badge ${a.estado === 'Abierto' ? 'badge-open' : 'badge-closed'}">${a.estado}</span></td>
+      <td><button class="btn btn-sm btn-secondary" onclick="toggleEstadoActividad('${a.idActividad}')">
+        ${a.estado === 'Abierto' ? '🔒 Cerrar' : '🔓 Abrir'}
+      </button></td>
+    </tr>`
+  ).join('');
+}
+
+// ============================================================
+//  MÓDULO 3: SERVICIO SOCIAL — Registro del estudiante
+// ============================================================
+function renderSelectActividades() {
+  const db  = getDB();
+  const sel = document.getElementById('srv-actividad');
+  if (!sel) return;
+  // Establecer fecha de hoy por defecto
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('srv-fecha').value = today;
+  // Cargar actividades abiertas
+  const abiertas = db.actividades.filter(a => a.estado === 'Abierto');
+  sel.innerHTML = '<option value="">— Selecciona una actividad —</option>' +
+    abiertas.map(a => `<option value="${a.idActividad}">${a.nombreActividad} (${a.lugar})</option>`).join('');
+}
+
+function registrarServicio() {
+  const fecha       = document.getElementById('srv-fecha').value;
+  const actividadId = document.getElementById('srv-actividad').value;
+  const descripcion = document.getElementById('srv-descripcion').value.trim();
+  const minutos     = parseInt(document.getElementById('srv-minutos').value);
+
+  if (!fecha || !actividadId || !descripcion || isNaN(minutos) || minutos < 1) {
+    showAlert('alert-srv', '⚠️ Todos los campos son obligatorios y los minutos deben ser > 0.', true);
+    return;
+  }
+  const db = getDB();
+  // Generar ID único para el registro
+  const newId = 's' + Date.now();
+  db.servicios.push({
+    id: newId,
+    estudianteId: currentUser.id,
+    actividadId,
+    fecha,
+    descripcion,
+    minutos,
+    estado: 'Pendiente'  // Estado inicial siempre "Pendiente"
+  });
+  saveDB(db);
+  showAlert('alert-srv-ok', '✅ Registro enviado correctamente. Estado: Pendiente de aprobación.', true);
+  showAlert('alert-srv', '', false);
+  document.getElementById('srv-descripcion').value = '';
+  document.getElementById('srv-minutos').value = '';
+  document.getElementById('srv-actividad').value = '';
+}
+
+function renderMisRegistros() {
+  if (!currentUser) return;
+  const db        = getDB();
+  const estudianteLogs = db.servicios.filter(s => s.estudianteId === currentUser.id);
+  const estudiante     = db.estudiantes.find(e => e.id === currentUser.id);
+
+  // Mostrar tarjeta de progreso
+  const cardProg = document.getElementById('card-progreso-estudiante');
+  if (cardProg && estudiante) {
+    const aprobados  = estudiante.minutosTotalesAprobados;
+    const pendientes = TOTAL_MINUTOS - aprobados;
+    const pct        = Math.min(Math.round((aprobados / TOTAL_MINUTOS) * 100), 100);
+    cardProg.innerHTML = `
+      <div class="card-title">📊 Mi Progreso</div>
+      <div class="stats-grid" style="margin-bottom:0">
+        <div class="stat-card green">
+          <div class="stat-value text-accent">${aprobados}</div>
+          <div class="stat-label">Min. Aprobados</div>
+        </div>
+        <div class="stat-card warn">
+          <div class="stat-value" style="color:var(--warn)">${Math.max(pendientes, 0)}</div>
+          <div class="stat-label">Min. Pendientes</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-value" style="color:var(--accent2)">${pct}%</div>
+          <div class="stat-label">Completado</div>
+        </div>
+      </div>`;
+  }
+
+  const tbody = document.getElementById('tabla-mis-registros');
+  if (!tbody) return;
+  if (!estudianteLogs.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📁</div><div class="empty-text">Aún no tienes registros.</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = estudianteLogs.sort((a,b) => b.fecha.localeCompare(a.fecha)).map(s => {
+    const act = db.actividades.find(a => a.idActividad === s.actividadId);
+    return `<tr>
+      <td>${formatFecha(s.fecha)}</td>
+      <td>${act ? act.nombreActividad : s.actividadId}</td>
+      <td style="max-width:200px;white-space:pre-wrap;font-size:0.8rem">${s.descripcion}</td>
+      <td>${s.minutos} min</td>
+      <td>${badgeEstado(s.estado)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+//  MÓDULO 3: SERVICIO SOCIAL — Panel del docente
+// ============================================================
+/**
+ * renderPanelDocente — muestra la tabla de registros "Pendientes"
+ * con botones de [Aprobar] y [Rechazar] por cada registro.
+ */
+function renderPanelDocente() {
+  const db = getDB();
+  const pendientes = db.servicios.filter(s => s.estado === 'Pendiente');
+  const historial  = db.servicios.filter(s => s.estado !== 'Pendiente');
+
+  // Tabla de pendientes
+  const tbodyP = document.getElementById('tabla-pendientes');
+  if (tbodyP) {
+    if (!pendientes.length) {
+      tbodyP.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">No hay registros pendientes de revisión.</div></div></td></tr>';
+    } else {
+      tbodyP.innerHTML = pendientes.map(s => {
+        const est = db.estudiantes.find(e => e.id === s.estudianteId);
+        const act = db.actividades.find(a => a.idActividad === s.actividadId);
+        return `<tr>
+          <td><strong>${est ? est.nombre : s.estudianteId}</strong></td>
+          <td>${formatFecha(s.fecha)}</td>
+          <td>${act ? act.nombreActividad : s.actividadId}</td>
+          <td style="max-width:180px;white-space:pre-wrap;font-size:0.8rem">${s.descripcion}</td>
+          <td>${s.minutos} min</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-success" onclick="accionServicio('${s.id}','Aprobado')">✅ Aprobar</button>
+            <button class="btn btn-danger" onclick="accionServicio('${s.id}','Rechazado')" style="margin-left:6px">❌ Rechazar</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // Tabla de historial de decisiones
+  const tbodyH = document.getElementById('tabla-historial-doc');
+  if (tbodyH) {
+    if (!historial.length) {
+      tbodyH.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Sin historial todavía.</div></div></td></tr>';
+    } else {
+      tbodyH.innerHTML = historial.sort((a,b) => b.fecha.localeCompare(a.fecha)).map(s => {
+        const est = db.estudiantes.find(e => e.id === s.estudianteId);
+        const act = db.actividades.find(a => a.idActividad === s.actividadId);
+        return `<tr>
+          <td>${est ? est.nombre : s.estudianteId}</td>
+          <td>${formatFecha(s.fecha)}</td>
+          <td>${act ? act.nombreActividad : s.actividadId}</td>
+          <td>${s.minutos} min</td>
+          <td>${badgeEstado(s.estado)}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+}
+
+/**
+ * accionServicio — aprueba o rechaza un registro de servicio.
+ * Si se aprueba, suma los minutos al total del estudiante.
+ */
+function accionServicio(servicioId, nuevoEstado) {
+  const db      = getDB();
+  const servicio = db.servicios.find(s => s.id === servicioId);
+  if (!servicio) return;
+  servicio.estado = nuevoEstado;
+  // Si fue aprobado, sumar los minutos al estudiante
+  if (nuevoEstado === 'Aprobado') {
+    const est = db.estudiantes.find(e => e.id === servicio.estudianteId);
+    if (est) {
+      est.minutosTotalesAprobados += servicio.minutos;
+    }
+  }
+  saveDB(db);
+  renderPanelDocente(); // Refrescar la tabla inmediatamente
+}
+
+// ============================================================
+//  MÓDULO 4: CONSULTAS Y REPORTES
+// ============================================================
+/**
+ * renderReportes — calcula y muestra dinámicamente:
+ * - Minutos aprobados y pendientes por estudiante (base 4800 min)
+ * - Fórmula: Minutos Pendientes = 4800 − Minutos Aprobados
+ * - Lista de quienes completaron y quienes están pendientes
+ */
+function renderReportes() {
+  const db         = getDB();
+  const total      = db.estudiantes.length;
+  const completos  = db.estudiantes.filter(e => e.minutosTotalesAprobados >= TOTAL_MINUTOS);
+  const incompletos = db.estudiantes.filter(e => e.minutosTotalesAprobados < TOTAL_MINUTOS);
+  const pendSrvs   = db.servicios.filter(s => s.estado === 'Pendiente').length;
+
+  // Stats de resumen
+  document.getElementById('reporte-stats').innerHTML = `
+    <div class="stat-card green"><div class="stat-value text-accent">${total}</div><div class="stat-label">Total Estudiantes</div></div>
+    <div class="stat-card blue"><div class="stat-value" style="color:var(--accent2)">${completos.length}</div><div class="stat-label">Completaron</div></div>
+    <div class="stat-card warn"><div class="stat-value" style="color:var(--warn)">${incompletos.length}</div><div class="stat-label">En Proceso</div></div>
+    <div class="stat-card red"><div class="stat-value" style="color:var(--danger)">${pendSrvs}</div><div class="stat-label">Registros Pendientes</div></div>
+  `;
+
+  // Tabla de progreso
+  const tbody = document.getElementById('tabla-reporte');
+  if (tbody) {
+    tbody.innerHTML = db.estudiantes.map(e => {
+      const aprobados  = e.minutosTotalesAprobados;
+      const pendientes = Math.max(TOTAL_MINUTOS - aprobados, 0); // Minutos Pendientes = 4800 - Aprobados
+      const pct        = Math.min(Math.round((aprobados / TOTAL_MINUTOS) * 100), 100);
+      const barClass   = pct >= 100 ? 'complete' : pct >= 50 ? 'partial' : 'low';
+      const statusBadge = aprobados >= TOTAL_MINUTOS
+        ? '<span class="badge badge-approved">✅ Completado</span>'
+        : '<span class="badge badge-pending">⏳ En proceso</span>';
+      return `<tr>
+        <td><strong>${e.nombre}</strong></td>
+        <td>${e.grado}</td>
+        <td>${aprobados} min</td>
+        <td>${pendientes} min</td>
+        <td>${pct}%</td>
+        <td><div class="progress-bar-wrap"><div class="progress-bar-fill ${barClass}" style="width:${pct}%"></div></div></td>
+        <td>${statusBadge}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" class="empty-state">Sin datos.</td></tr>';
+  }
+
+  // Lista completos
+  const listaCom = document.getElementById('lista-completos');
+  if (listaCom) {
+    listaCom.innerHTML = completos.length
+      ? completos.map(e => `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div><strong>${e.nombre}</strong><br><span class="text-muted text-small">${e.grado}</span></div>
+          <span class="badge badge-approved">${e.minutosTotalesAprobados} min</span>
+        </div>`).join('')
+      : '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Ningún estudiante ha completado aún.</div></div>';
+  }
+
+  // Lista pendientes
+  const listaPend = document.getElementById('lista-pendientes-rep');
+  if (listaPend) {
+    listaPend.innerHTML = incompletos.length
+      ? incompletos.map(e => {
+          const pct = Math.min(Math.round((e.minutosTotalesAprobados / TOTAL_MINUTOS) * 100), 100);
+          return `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div><strong>${e.nombre}</strong><br><span class="text-muted text-small">${e.grado} · ${pct}% completado</span></div>
+            <span class="badge badge-pending">${TOTAL_MINUTOS - e.minutosTotalesAprobados} min faltantes</span>
+          </div>`;
+        }).join('')
+      : '<div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-text">¡Todos completaron el servicio social!</div></div>';
+  }
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const db = getDB();
+  const completos   = db.estudiantes.filter(e => e.minutosTotalesAprobados >= TOTAL_MINUTOS).length;
+  const pendSrvs    = db.servicios.filter(s => s.estado === 'Pendiente').length;
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card green"><div class="stat-value text-accent">${db.estudiantes.length}</div><div class="stat-label">Estudiantes</div></div>
+    <div class="stat-card blue"><div class="stat-value" style="color:var(--accent2)">${db.docentes.length}</div><div class="stat-label">Docentes</div></div>
+    <div class="stat-card warn"><div class="stat-value" style="color:var(--warn)">${db.actividades.length}</div><div class="stat-label">Actividades</div></div>
+    <div class="stat-card green"><div class="stat-value text-accent">${completos}</div><div class="stat-label">Completaron SS</div></div>
+    <div class="stat-card red"><div class="stat-value" style="color:var(--danger)">${pendSrvs}</div><div class="stat-label">Pendientes aprobación</div></div>
+  `;
+
+  let extra = '';
+  if (currentUser?.rol === 'estudiante') {
+    const est = db.estudiantes.find(e => e.id === currentUser.id);
+    if (est) {
+      const pct = Math.min(Math.round((est.minutosTotalesAprobados / TOTAL_MINUTOS) * 100), 100);
+      extra = `
+      <div class="card">
+        <div class="card-title">🎒 Mi Servicio Social</div>
+        <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+          <div>
+            <div style="font-size:2.5rem;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">${pct}%</div>
+            <div class="text-muted text-small">Completado</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.8rem">
+              <span>${est.minutosTotalesAprobados} min aprobados</span>
+              <span class="text-muted">${TOTAL_MINUTOS} min requeridos</span>
+            </div>
+            <div style="background:var(--surface2);border-radius:6px;height:10px;overflow:hidden">
+              <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:6px;transition:width 0.5s"></div>
+            </div>
+            <div style="margin-top:8px;font-size:0.8rem;color:var(--text2)">
+              ${Math.max(TOTAL_MINUTOS - est.minutosTotalesAprobados, 0)} minutos restantes para completar las 80 horas
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+  document.getElementById('dashboard-extra').innerHTML = extra;
+}
+
+// ============================================================
+//  UTILIDADES
+// ============================================================
+function showAlert(id, msg, visible) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('show', visible);
+}
+
+function badgeEstado(estado) {
+  const map = {
+    'Pendiente': '<span class="badge badge-pending">⏳ Pendiente</span>',
+    'Aprobado':  '<span class="badge badge-approved">✅ Aprobado</span>',
+    'Rechazado': '<span class="badge badge-rejected">❌ Rechazado</span>'
+  };
+  return map[estado] || estado;
+}
+
+function formatFecha(f) {
+  if (!f) return '—';
+  const [y, m, d] = f.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ============================================================
+//  ENTER en login
+// ============================================================
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') {
+    handleLogin();
+  }
+});
+
+// ============================================================
+//  PANEL DE DESBLOQUEO (solo docentes)
+// ============================================================
+/**
+ * renderDesbloquear — muestra la tabla de cuentas bloqueadas.
+ * El docente puede hacer clic en [Desbloquear] para limpiar
+ * los intentos fallidos de cualquier usuario.
+ */
+function renderDesbloquear() {
+  const lockouts = getLockouts();
+  const db       = getDB();
+  const tbody    = document.getElementById('tabla-bloqueados');
+  if (!tbody) return;
+
+  // Filtrar solo los que están realmente bloqueados (con tiempo activo)
+  const bloqueados = Object.entries(lockouts).filter(([id, info]) => {
+    if (info.intentos < MAX_INTENTOS) return false;
+    if (!info.bloqueadoHasta) return false;
+    return Date.now() < info.bloqueadoHasta; // solo si el tiempo no expiró
+  });
+
+  if (!bloqueados.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">No hay cuentas bloqueadas en este momento.</div></div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = bloqueados.map(([id, info]) => {
+    // Buscar nombre del usuario en docentes o estudiantes
+    const docente    = db.docentes.find(d => d.id === id);
+    const estudiante = db.estudiantes.find(e => e.id === id);
+    const nombre     = docente ? docente.nombre : (estudiante ? estudiante.nombre : '(desconocido)');
+    const tipo       = docente ? '🧑‍🏫 Docente' : '🎒 Estudiante';
+
+    // Calcular tiempo restante
+    const restanteMs  = info.bloqueadoHasta - Date.now();
+    const seg         = Math.max(Math.ceil(restanteMs / 1000), 0);
+    const min         = Math.floor(seg / 60);
+    const s           = seg % 60;
+    const tiempoLabel = `${String(min).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+    return `<tr>
+      <td><strong>${id}</strong></td>
+      <td>${nombre}</td>
+      <td>${tipo}</td>
+      <td><span class="badge badge-locked">${info.intentos} intentos</span></td>
+      <td style="font-family:'Syne',sans-serif;font-weight:700;color:var(--danger)">${tiempoLabel}</td>
+      <td>
+        <button class="btn btn-success btn-sm" onclick="desbloquearCuenta('${id}')">
+          🔓 Desbloquear
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/**
+ * desbloquearCuenta — permite a un docente limpiar manualmente
+ * el bloqueo de un usuario específico.
+ */
+function desbloquearCuenta(id) {
+  limpiarBloqueo(id);
+  renderDesbloquear(); // Refrescar la tabla
+  // Mostrar confirmación breve en la tabla
+  const tbody = document.getElementById('tabla-bloqueados');
+  if (tbody) {
+    const confirm = document.createElement('tr');
+    confirm.innerHTML = `<td colspan="6" style="padding:12px;color:var(--success);font-size:0.85rem;text-align:center">
+      ✅ La cuenta <strong>${id}</strong> fue desbloqueada correctamente. El usuario ya puede iniciar sesión.
+    </td>`;
+    tbody.prepend(confirm);
+    setTimeout(() => confirm.remove(), 4000);
+  }
+}
+
+// ============================================================
+//  INICIALIZACIÓN
+// ============================================================
+initDB(); // Cargar datos semilla si localStorage está vacío
+
+// Al cargar, verificar si el campo ID ya tiene valor y si está bloqueado
+// (útil si el navegador autocompletó el campo tras una recarga)
+window.addEventListener('load', () => {
+  const id = document.getElementById('login-id').value.trim().toUpperCase();
+  if (id && estaBloquedo(id)) {
+    const lockouts = getLockouts();
+    activarPantallaBloqueo(id, lockouts[id].bloqueadoHasta);
+  }
+});
+</script>
+</body>
+</html>
