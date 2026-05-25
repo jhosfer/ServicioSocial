@@ -651,9 +651,50 @@
           <div class="card-title">📁 Historial de bitácora</div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Fecha</th><th>Actividad</th><th>Descripción</th><th>Minutos</th><th>Estado</th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Actividad</th><th>Descripción</th><th>Minutos</th><th>Estado</th><th>Acción</th></tr></thead>
               <tbody id="tabla-mis-registros"></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MODAL: CORREGIR REGISTRO RECHAZADO ===== -->
+      <div class="modal-overlay" id="modal-corregir">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">✏️ Corregir y reenviar registro</div>
+            <button class="modal-close" onclick="cerrarModalCorregir()">✕</button>
+          </div>
+          <!-- Aviso de qué fue rechazado -->
+          <div class="alert alert-danger show" id="modal-aviso-rechazo" style="margin-bottom:16px;">
+            ❌ Este registro fue rechazado. Corrige los campos necesarios y reenvíalo para aprobación.
+          </div>
+          <input type="hidden" id="corregir-id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Fecha de realización</label>
+              <input type="date" id="corregir-fecha" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Actividad</label>
+              <select id="corregir-actividad" class="form-control">
+                <option value="">— Selecciona una actividad —</option>
+              </select>
+            </div>
+            <div class="form-group span-2">
+              <label>Descripción detallada</label>
+              <textarea id="corregir-descripcion" class="form-control" placeholder="Corrige la descripción de lo que realizaste..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Minutos dedicados</label>
+              <input type="number" id="corregir-minutos" class="form-control" min="1" max="480">
+            </div>
+          </div>
+          <div class="alert alert-danger" id="alert-corregir"></div>
+          <div class="alert alert-success" id="alert-corregir-ok"></div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" onclick="cerrarModalCorregir()">Cancelar</button>
+            <button class="btn btn-primary" onclick="reenviarRegistro()">📤 Reenviar para aprobación</button>
           </div>
         </div>
       </div>
@@ -768,7 +809,8 @@ const SEED_DATA = {
   servicios: [
     { id: 's1', estudianteId: 'EST001', actividadId: 'ACT001', fecha: '2024-03-10', descripcion: 'Organicé y catalogué libros nuevos en la biblioteca.', minutos: 120, estado: 'Aprobado' },
     { id: 's2', estudianteId: 'EST001', actividadId: 'ACT002', fecha: '2024-03-15', descripcion: 'Participé en la jornada de limpieza del patio.', minutos: 90,  estado: 'Pendiente' },
-    { id: 's3', estudianteId: 'EST002', actividadId: 'ACT001', fecha: '2024-03-20', descripcion: 'Ayudé a clasificar material didáctico.', minutos: 150, estado: 'Aprobado' }
+    { id: 's3', estudianteId: 'EST002', actividadId: 'ACT001', fecha: '2024-03-20', descripcion: 'Ayudé a clasificar material didáctico.', minutos: 150, estado: 'Aprobado' },
+    { id: 's4', estudianteId: 'EST001', actividadId: 'ACT002', fecha: '2024-03-22', descripcion: 'Fui al patio.', minutos: 30, estado: 'Rechazado' }
   ],
   intentos: {} // mapa { id: número_de_intentos_fallidos }
 };
@@ -1258,12 +1300,17 @@ function renderMisRegistros() {
   }
   tbody.innerHTML = estudianteLogs.sort((a,b) => b.fecha.localeCompare(a.fecha)).map(s => {
     const act = db.actividades.find(a => a.idActividad === s.actividadId);
+    // Mostrar botón "Corregir y reenviar" solo en registros rechazados
+    const accionBtn = s.estado === 'Rechazado'
+      ? `<button class="btn btn-warn btn-sm" onclick="abrirModalCorregir('${s.id}')">✏️ Corregir y reenviar</button>`
+      : '—';
     return `<tr>
       <td>${formatFecha(s.fecha)}</td>
       <td>${act ? act.nombreActividad : s.actividadId}</td>
       <td style="max-width:200px;white-space:pre-wrap;font-size:0.8rem">${s.descripcion}</td>
       <td>${s.minutos} min</td>
       <td>${badgeEstado(s.estado)}</td>
+      <td>${accionBtn}</td>
     </tr>`;
   }).join('');
 }
@@ -1464,6 +1511,90 @@ function renderDashboard() {
     }
   }
   document.getElementById('dashboard-extra').innerHTML = extra;
+}
+
+// ============================================================
+//  MÓDULO 3: CORREGIR Y REENVIAR REGISTRO RECHAZADO
+// ============================================================
+
+/**
+ * abrirModalCorregir — abre el modal prellenado con los datos
+ * del registro rechazado para que el estudiante los corrija.
+ * Solo disponible en registros con estado "Rechazado".
+ */
+function abrirModalCorregir(servicioId) {
+  const db      = getDB();
+  const servicio = db.servicios.find(s => s.id === servicioId);
+  if (!servicio || servicio.estado !== 'Rechazado') return;
+
+  // Precargar el campo oculto con el ID del registro a corregir
+  document.getElementById('corregir-id').value = servicioId;
+
+  // Precargar los campos con los valores originales del registro
+  document.getElementById('corregir-fecha').value       = servicio.fecha;
+  document.getElementById('corregir-descripcion').value = servicio.descripcion;
+  document.getElementById('corregir-minutos').value     = servicio.minutos;
+
+  // Poblar el select de actividades (solo las abiertas)
+  const abiertas = db.actividades.filter(a => a.estado === 'Abierto');
+  const sel = document.getElementById('corregir-actividad');
+  sel.innerHTML = '<option value="">— Selecciona una actividad —</option>' +
+    abiertas.map(a =>
+      `<option value="${a.idActividad}" ${a.idActividad === servicio.actividadId ? 'selected' : ''}>
+        ${a.nombreActividad} (${a.lugar})
+      </option>`
+    ).join('');
+
+  // Limpiar alertas previas del modal
+  showAlert('alert-corregir', '', false);
+  showAlert('alert-corregir-ok', '', false);
+
+  // Mostrar el modal
+  document.getElementById('modal-corregir').classList.add('show');
+}
+
+function cerrarModalCorregir() {
+  document.getElementById('modal-corregir').classList.remove('show');
+}
+
+/**
+ * reenviarRegistro — guarda los cambios del estudiante sobre
+ * el registro rechazado y lo devuelve al estado "Pendiente"
+ * para que el docente lo revise de nuevo.
+ */
+function reenviarRegistro() {
+  const servicioId  = document.getElementById('corregir-id').value;
+  const fecha       = document.getElementById('corregir-fecha').value;
+  const actividadId = document.getElementById('corregir-actividad').value;
+  const descripcion = document.getElementById('corregir-descripcion').value.trim();
+  const minutos     = parseInt(document.getElementById('corregir-minutos').value);
+
+  if (!fecha || !actividadId || !descripcion || isNaN(minutos) || minutos < 1) {
+    showAlert('alert-corregir', '⚠️ Todos los campos son obligatorios y los minutos deben ser > 0.', true);
+    return;
+  }
+
+  const db      = getDB();
+  const servicio = db.servicios.find(s => s.id === servicioId);
+  if (!servicio) return;
+
+  // Actualizar los campos corregidos por el estudiante
+  servicio.fecha       = fecha;
+  servicio.actividadId = actividadId;
+  servicio.descripcion = descripcion;
+  servicio.minutos     = minutos;
+  servicio.estado      = 'Pendiente'; // Vuelve a cola de revisión del docente
+
+  saveDB(db);
+
+  showAlert('alert-corregir-ok', '✅ Registro corregido y reenviado. Quedará Pendiente de aprobación.', true);
+  showAlert('alert-corregir', '', false);
+
+  // Cerrar modal y refrescar la tabla después de un momento
+  setTimeout(() => {
+    cerrarModalCorregir();
+    renderMisRegistros();
+  }, 1800);
 }
 
 // ============================================================
