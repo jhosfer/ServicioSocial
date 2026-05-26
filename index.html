@@ -1220,12 +1220,43 @@ function renderTablaActividades() {
 //  MÓDULO 3: SERVICIO SOCIAL — Registro del estudiante
 // ============================================================
 function renderSelectActividades() {
-  const db  = getDB();
-  const sel = document.getElementById('srv-actividad');
+  const db         = getDB();
+  const sel        = document.getElementById('srv-actividad');
+  const btnEnviar  = document.querySelector('#page-registrar-servicio .btn-primary');
   if (!sel) return;
+
+  const estudiante = db.estudiantes.find(e => e.id === currentUser.id);
+
+  // Verificar si el estudiante ya completó las 80 horas (4800 min)
+  if (estudiante && estudiante.minutosTotalesAprobados >= TOTAL_MINUTOS) {
+    // Deshabilitar todos los campos del formulario
+    ['srv-fecha','srv-actividad','srv-descripcion','srv-minutos'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = true;
+    });
+    if (btnEnviar) btnEnviar.disabled = true;
+
+    // Mostrar mensaje de felicitación en lugar del formulario
+    showAlert('alert-srv-ok',
+      '🎉 ¡Felicitaciones! Ya completaste las 80 horas de servicio social. No es necesario registrar más actividades.',
+      true
+    );
+    showAlert('alert-srv', '', false);
+    return;
+  }
+
+  // Si no ha completado, habilitar los campos (por si volvió a esta vista)
+  ['srv-fecha','srv-actividad','srv-descripcion','srv-minutos'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = false;
+  });
+  if (btnEnviar) btnEnviar.disabled = false;
+  showAlert('alert-srv-ok', '', false);
+
   // Establecer fecha de hoy por defecto
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('srv-fecha').value = today;
+
   // Cargar actividades abiertas
   const abiertas = db.actividades.filter(a => a.estado === 'Abierto');
   sel.innerHTML = '<option value="">— Selecciona una actividad —</option>' +
@@ -1242,7 +1273,16 @@ function registrarServicio() {
     showAlert('alert-srv', '⚠️ Todos los campos son obligatorios y los minutos deben ser > 0.', true);
     return;
   }
+
   const db = getDB();
+
+  // Validación de seguridad: verificar que el estudiante no haya completado ya las horas
+  const estudiante = db.estudiantes.find(e => e.id === currentUser.id);
+  if (estudiante && estudiante.minutosTotalesAprobados >= TOTAL_MINUTOS) {
+    showAlert('alert-srv', '🎉 Ya completaste las 80 horas. No puedes registrar más actividades.', true);
+    return;
+  }
+
   // Generar ID único para el registro
   const newId = 's' + Date.now();
   db.servicios.push({
