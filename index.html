@@ -953,7 +953,17 @@ function handleLogin() {
   showAlert('alert-login', '', false);
   const db = getDB();
 
-  // Buscar usuario
+  // Verificar primero si el ID existe en el sistema
+  const existeDocente    = db.docentes.find(d => d.id === inputId);
+  const existeEstudiante = db.estudiantes.find(e => e.id === inputId);
+
+  if (!existeDocente && !existeEstudiante) {
+    // ID no registrado — no se cuentan intentos, no se bloquea
+    showAlert('alert-login', `⚠️ El usuario "${inputId}" no está registrado en el sistema.`, true);
+    return;
+  }
+
+  // Buscar usuario con contraseña correcta
   const docente    = db.docentes.find(d => d.id === inputId && d.contrasenia === inputPass);
   const estudiante = db.estudiantes.find(e => e.id === inputId && e.contrasenia === inputPass);
 
@@ -1253,9 +1263,10 @@ function renderSelectActividades() {
   if (btnEnviar) btnEnviar.disabled = false;
   showAlert('alert-srv-ok', '', false);
 
-  // Establecer fecha de hoy por defecto
+  // Establecer fecha de hoy por defecto y como máximo permitido
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('srv-fecha').value = today;
+  document.getElementById('srv-fecha').max   = today; // Bloquea fechas futuras en el calendario
 
   // Cargar actividades abiertas
   const abiertas = db.actividades.filter(a => a.estado === 'Abierto');
@@ -1274,9 +1285,14 @@ function registrarServicio() {
     return;
   }
 
-  const db = getDB();
-
-  // Validación de seguridad: verificar que el estudiante no haya completado ya las horas
+  // Validar que la fecha no sea futura
+  const fechaIngresada = new Date(fecha + 'T00:00:00');
+  const hoy            = new Date();
+  hoy.setHours(0, 0, 0, 0); // Comparar solo por fecha, sin hora
+  if (fechaIngresada > hoy) {
+    showAlert('alert-srv', '📅 La fecha no puede ser futura. Solo puedes registrar actividades ya realizadas.', true);
+    return;
+  }
   const estudiante = db.estudiantes.find(e => e.id === currentUser.id);
   if (estudiante && estudiante.minutosTotalesAprobados >= TOTAL_MINUTOS) {
     showAlert('alert-srv', '🎉 Ya completaste las 80 horas. No puedes registrar más actividades.', true);
@@ -1570,6 +1586,10 @@ function abrirModalCorregir(servicioId) {
   // Precargar el campo oculto con el ID del registro a corregir
   document.getElementById('corregir-id').value = servicioId;
 
+  // Bloquear fechas futuras también en el modal
+  const hoyStr = new Date().toISOString().split('T')[0];
+  document.getElementById('corregir-fecha').max = hoyStr;
+
   // Precargar los campos con los valores originales del registro
   document.getElementById('corregir-fecha').value       = servicio.fecha;
   document.getElementById('corregir-descripcion').value = servicio.descripcion;
@@ -1611,6 +1631,15 @@ function reenviarRegistro() {
 
   if (!fecha || !actividadId || !descripcion || isNaN(minutos) || minutos < 1) {
     showAlert('alert-corregir', '⚠️ Todos los campos son obligatorios y los minutos deben ser > 0.', true);
+    return;
+  }
+
+  // Validar que la fecha corregida tampoco sea futura
+  const fechaIngresada = new Date(fecha + 'T00:00:00');
+  const hoy            = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  if (fechaIngresada > hoy) {
+    showAlert('alert-corregir', '📅 La fecha no puede ser futura. Solo puedes registrar actividades ya realizadas.', true);
     return;
   }
 
