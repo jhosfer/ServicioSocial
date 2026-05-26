@@ -764,7 +764,7 @@
             </table>
           </div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div id="seccion-listas-reporte" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
           <div class="card">
             <div class="card-title" style="color:var(--success)">✅ Completaron el Servicio Social</div>
             <div id="lista-completos"></div>
@@ -1452,32 +1452,55 @@ function accionServicio(servicioId, nuevoEstado) {
 //  MÓDULO 4: CONSULTAS Y REPORTES
 // ============================================================
 /**
- * renderReportes — calcula y muestra dinámicamente:
- * - Minutos aprobados y pendientes por estudiante (base 4800 min)
- * - Fórmula: Minutos Pendientes = 4800 − Minutos Aprobados
- * - Lista de quienes completaron y quienes están pendientes
+ * renderReportes — calcula y muestra dinámicamente el cumplimiento.
+ * Si el usuario es DOCENTE: ve todos los estudiantes.
+ * Si el usuario es ESTUDIANTE: solo ve su propia información.
  */
 function renderReportes() {
-  const db         = getDB();
-  const total      = db.estudiantes.length;
-  const completos  = db.estudiantes.filter(e => e.minutosTotalesAprobados >= TOTAL_MINUTOS);
-  const incompletos = db.estudiantes.filter(e => e.minutosTotalesAprobados < TOTAL_MINUTOS);
-  const pendSrvs   = db.servicios.filter(s => s.estado === 'Pendiente').length;
+  const db = getDB();
+
+  // Filtrar estudiantes según el rol del usuario actual
+  const esEstudiante = currentUser.rol === 'estudiante';
+  const listaEstudiantes = esEstudiante
+    ? db.estudiantes.filter(e => e.id === currentUser.id)  // Solo el suyo
+    : db.estudiantes;                                        // Todos
+
+  const completos   = listaEstudiantes.filter(e => e.minutosTotalesAprobados >= TOTAL_MINUTOS);
+  const incompletos = listaEstudiantes.filter(e => e.minutosTotalesAprobados < TOTAL_MINUTOS);
+  const pendSrvs    = db.servicios.filter(s =>
+    s.estado === 'Pendiente' &&
+    (esEstudiante ? s.estudianteId === currentUser.id : true)
+  ).length;
+
+  // Título dinámico según rol
+  const subtitulo = esEstudiante
+    ? 'Tu progreso personal — 80 horas (4800 min.) de servicio social'
+    : 'Seguimiento del cumplimiento de las 80 horas (4800 min.) de servicio social — Ley 1437 de 2011';
+  document.querySelector('#page-reportes .page-subtitle').textContent = subtitulo;
 
   // Stats de resumen
-  document.getElementById('reporte-stats').innerHTML = `
-    <div class="stat-card green"><div class="stat-value text-accent">${total}</div><div class="stat-label">Total Estudiantes</div></div>
-    <div class="stat-card blue"><div class="stat-value" style="color:var(--accent2)">${completos.length}</div><div class="stat-label">Completaron</div></div>
-    <div class="stat-card warn"><div class="stat-value" style="color:var(--warn)">${incompletos.length}</div><div class="stat-label">En Proceso</div></div>
-    <div class="stat-card red"><div class="stat-value" style="color:var(--danger)">${pendSrvs}</div><div class="stat-label">Registros Pendientes</div></div>
-  `;
+  document.getElementById('reporte-stats').innerHTML = esEstudiante
+    ? (() => {
+        const est = listaEstudiantes[0];
+        const pct = Math.min(Math.round((est.minutosTotalesAprobados / TOTAL_MINUTOS) * 100), 100);
+        return `
+          <div class="stat-card green"><div class="stat-value text-accent">${est.minutosTotalesAprobados}</div><div class="stat-label">Min. Aprobados</div></div>
+          <div class="stat-card warn"><div class="stat-value" style="color:var(--warn)">${Math.max(TOTAL_MINUTOS - est.minutosTotalesAprobados, 0)}</div><div class="stat-label">Min. Pendientes</div></div>
+          <div class="stat-card blue"><div class="stat-value" style="color:var(--accent2)">${pct}%</div><div class="stat-label">% Completado</div></div>
+          <div class="stat-card red"><div class="stat-value" style="color:var(--danger)">${pendSrvs}</div><div class="stat-label">Registros Pendientes</div></div>`;
+      })()
+    : `
+        <div class="stat-card green"><div class="stat-value text-accent">${db.estudiantes.length}</div><div class="stat-label">Total Estudiantes</div></div>
+        <div class="stat-card blue"><div class="stat-value" style="color:var(--accent2)">${completos.length}</div><div class="stat-label">Completaron</div></div>
+        <div class="stat-card warn"><div class="stat-value" style="color:var(--warn)">${incompletos.length}</div><div class="stat-label">En Proceso</div></div>
+        <div class="stat-card red"><div class="stat-value" style="color:var(--danger)">${pendSrvs}</div><div class="stat-label">Registros Pendientes</div></div>`;
 
   // Tabla de progreso
   const tbody = document.getElementById('tabla-reporte');
   if (tbody) {
-    tbody.innerHTML = db.estudiantes.map(e => {
+    tbody.innerHTML = listaEstudiantes.map(e => {
       const aprobados  = e.minutosTotalesAprobados;
-      const pendientes = Math.max(TOTAL_MINUTOS - aprobados, 0); // Minutos Pendientes = 4800 - Aprobados
+      const pendientes = Math.max(TOTAL_MINUTOS - aprobados, 0);
       const pct        = Math.min(Math.round((aprobados / TOTAL_MINUTOS) * 100), 100);
       const barClass   = pct >= 100 ? 'complete' : pct >= 50 ? 'partial' : 'low';
       const statusBadge = aprobados >= TOTAL_MINUTOS
@@ -1494,6 +1517,10 @@ function renderReportes() {
       </tr>`;
     }).join('') || '<tr><td colspan="7" class="empty-state">Sin datos.</td></tr>';
   }
+
+  // Listas de completos y pendientes (solo visibles para docente)
+  const seccionListas = document.getElementById('seccion-listas-reporte');
+  if (seccionListas) seccionListas.style.display = esEstudiante ? 'none' : 'grid';
 
   // Lista completos
   const listaCom = document.getElementById('lista-completos');
